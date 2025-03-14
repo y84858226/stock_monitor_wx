@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request
 import hashlib
+import reply
+import receive
 
 app = Flask(__name__)
 
@@ -42,6 +44,68 @@ def wechat_verify():
             return ""
             
     except Exception as e:
+        return str(e)
+
+@app.route('/wx', methods=['POST'])
+def wechat_message():
+    try:
+        # 获取微信服务器发送的数据
+        webData = request.data
+        print("Handle Post webdata is ", webData)
+        
+        # 解析XML数据
+        recMsg = receive.parse_xml(webData)
+        
+        # 根据消息类型处理不同的消息
+        if isinstance(recMsg, receive.Msg):
+            toUser = recMsg.FromUserName
+            fromUser = recMsg.ToUserName
+            
+            if recMsg.MsgType == 'text':
+                # 处理文本消息
+                content = "您发送了文本消息：" + recMsg.Content
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return replyMsg.send()
+                
+            elif recMsg.MsgType == 'image':
+                # 处理图片消息
+                content = "您发送了图片消息，图片链接为：" + recMsg.PicUrl
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return replyMsg.send()
+                
+            elif recMsg.MsgType == 'voice':
+                # 处理语音消息
+                content = "您发送了语音消息"
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return replyMsg.send()
+                
+            elif recMsg.MsgType == 'video':
+                # 处理视频消息
+                content = "您发送了视频消息"
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return replyMsg.send()
+                
+            elif recMsg.MsgType == 'location':
+                # 处理位置消息
+                content = "您发送了位置消息，位置为：经度 " + str(recMsg.Location_Y) + " 纬度 " + str(recMsg.Location_X)
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return replyMsg.send()
+                
+            elif recMsg.MsgType == 'link':
+                # 处理链接消息
+                content = "您发送了链接：" + recMsg.Title
+                replyMsg = reply.TextMsg(toUser, fromUser, content)
+                return replyMsg.send()
+                
+            else:
+                print("暂且不处理")
+                return "success"
+        else:
+            print("暂且不处理")
+            return "success"
+            
+    except Exception as e:
+        print("处理错误：", str(e))
         return str(e)
 
 if __name__ == '__main__':
