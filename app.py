@@ -66,7 +66,7 @@ def wechat_message():
                 print("recMsg.EventKey is ", recMsg.EventKey)
                 if recMsg.EventKey == '2':
                     # 处理观影券领取事件
-                    content = "关注"汇邻商管"公众号，可至汇邻广场5号楼1F客服中心领取中影"9.9"元观影券一张（仅限中影汇邻店使用），每号限领一次，观影券数量有限，送完即止！"
+                    content = "关注公众号！"
                     replyMsg = reply.TextMsg(toUser, fromUser, content)
                     return replyMsg.send()
                     
