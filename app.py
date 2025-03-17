@@ -2,8 +2,20 @@ from flask import Flask, render_template, request
 import hashlib
 import reply
 import receive
+import logging
+import sys
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
 @app.route('/')
 def home():
@@ -35,7 +47,7 @@ def wechat_verify():
         hashcode = sha1.hexdigest()
         
         # 打印日志
-        print(f"handle/GET func: hashcode: {hashcode}, signature: {signature}")
+        logger.info(f"handle/GET func: hashcode: {hashcode}, signature: {signature}")
         
         # 验证签名
         if hashcode == signature:
@@ -44,6 +56,7 @@ def wechat_verify():
             return ""
             
     except Exception as e:
+        logger.error(f"验证失败: {str(e)}")
         return str(e)
 
 @app.route('/wx', methods=['POST'])
@@ -51,7 +64,7 @@ def wechat_message():
     try:
         # 获取微信服务器发送的数据
         webData = request.data
-        print("Handle Post webdata is ", webData)
+        logger.info(f"Handle Post webdata is {webData}")
         
         # 解析XML数据
         recMsg = receive.parse_xml(webData)
@@ -60,13 +73,10 @@ def wechat_message():
         if isinstance(recMsg, receive.Msg):
             toUser = recMsg.FromUserName
             fromUser = recMsg.ToUserName
-            print("Received message from user:", toUser)
-            print("Message type:", recMsg.MsgType)
-            print("Event:", recMsg.Event)
-            print("EventKey:", recMsg.EventKey)
-
+            
             # 处理菜单点击事件
             if recMsg.MsgType == 'event' and recMsg.Event == 'CLICK':
+                logger.info(f"recMsg.EventKey is {recMsg.EventKey}")
                 if recMsg.EventKey == '2':
                     # 处理观影券领取事件
                     content = "关注公众号！"
@@ -122,15 +132,16 @@ def wechat_message():
                 return replyMsg.send()
                 
             else:
-                print("暂且不处理")
+                logger.info("暂且不处理")
                 return "success"
         else:
-            print("暂且不处理")
+            logger.info("暂且不处理")
             return "success"
             
     except Exception as e:
-        print("处理错误：", str(e))
+        logger.error(f"处理错误：{str(e)}")
         return str(e)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    logger.info("Starting Flask server...")
+    app.run(host='0.0.0.0', port=80, debug=True)
