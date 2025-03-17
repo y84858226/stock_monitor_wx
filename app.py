@@ -60,10 +60,13 @@ def wechat_message():
         if isinstance(recMsg, receive.Msg):
             toUser = recMsg.FromUserName
             fromUser = recMsg.ToUserName
-            
+            print("Received message from user:", toUser)
+            print("Message type:", recMsg.MsgType)
+            print("Event:", recMsg.Event)
+            print("EventKey:", recMsg.EventKey)
+
             # 处理菜单点击事件
             if recMsg.MsgType == 'event' and recMsg.Event == 'CLICK':
-                print("recMsg.EventKey is ", recMsg.EventKey)
                 if recMsg.EventKey == '2':
                     # 处理观影券领取事件
                     content = "关注公众号！"
