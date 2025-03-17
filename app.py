@@ -6,6 +6,11 @@ import logging
 import sys
 import xml.dom.minidom
 from menu import WeChatMenu
+import os
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 # 配置日志
 logging.basicConfig(
@@ -20,8 +25,13 @@ app = Flask(__name__)
 logger = logging.getLogger(__name__)
 
 # 微信公众号配置
-WECHAT_APPID = "your_appid"  # 替换为你的APPID
-WECHAT_APPSECRET = "your_appsecret"  # 替换为你的APPSECRET
+WECHAT_APPID = os.getenv('WECHAT_APPID')  # 从环境变量获取
+WECHAT_APPSECRET = os.getenv('WECHAT_APPSECRET')  # 从环境变量获取
+
+# 检查配置是否正确加载
+if not WECHAT_APPID or not WECHAT_APPSECRET:
+    logger.error("请在 .env 文件中配置 WECHAT_APPID 和 WECHAT_APPSECRET")
+    raise ValueError("缺少必要的微信公众号配置")
 
 def format_xml(xml_string):
     """格式化 XML 字符串，使其更易读"""
