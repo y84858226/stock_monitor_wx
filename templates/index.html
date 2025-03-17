@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的Flask网站</title>
+    <title>微信公众号菜单管理</title>
     <style>
         body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            margin: 0;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
             background-color: white;
             padding: 20px;
             border-radius: 8px;
@@ -22,18 +21,92 @@
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 30px;
         }
-        .content {
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
             margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .create-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .create-btn:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>欢迎来到我的网站</h1>
-        <div class="content">
-            <p>这是一个使用Flask框架构建的网站。</p>
+        <h1>微信公众号菜单管理</h1>
+        <div class="button-group">
+            <button class="create-btn" onclick="createMenu()">创建菜单</button>
+            <button class="delete-btn" onclick="deleteMenu()">删除菜单</button>
         </div>
+        <div id="result"></div>
     </div>
+
+    <script>
+        function showResult(message, isSuccess) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = isSuccess ? 'success' : 'error';
+        }
+
+        async function createMenu() {
+            try {
+                const response = await fetch('/create_menu', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                showResult(data.message, data.success);
+            } catch (error) {
+                showResult('操作失败：' + error.message, false);
+            }
+        }
+
+        async function deleteMenu() {
+            try {
+                const response = await fetch('/delete_menu', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                showResult(data.message, data.success);
+            } catch (error) {
+                showResult('操作失败：' + error.message, false);
+            }
+        }
+    </script>
 </body>
 </html> 

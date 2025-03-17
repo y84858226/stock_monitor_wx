@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import hashlib
 import reply
 import receive
 import logging
 import sys
 import xml.dom.minidom
+from menu import WeChatMenu
 
 # 配置日志
 logging.basicConfig(
@@ -18,6 +19,10 @@ logging.basicConfig(
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
 
+# 微信公众号配置
+WECHAT_APPID = "your_appid"  # 替换为你的APPID
+WECHAT_APPSECRET = "your_appsecret"  # 替换为你的APPSECRET
+
 def format_xml(xml_string):
     """格式化 XML 字符串，使其更易读"""
     try:
@@ -29,6 +34,32 @@ def format_xml(xml_string):
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/create_menu', methods=['POST'])
+def create_menu():
+    """创建自定义菜单"""
+    try:
+        menu = WeChatMenu(WECHAT_APPID, WECHAT_APPSECRET)
+        if menu.create_menu():
+            return jsonify({"success": True, "message": "创建菜单成功"})
+        else:
+            return jsonify({"success": False, "message": "创建菜单失败"})
+    except Exception as e:
+        logger.error(f"创建菜单异常: {str(e)}")
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/delete_menu', methods=['POST'])
+def delete_menu():
+    """删除自定义菜单"""
+    try:
+        menu = WeChatMenu(WECHAT_APPID, WECHAT_APPSECRET)
+        if menu.delete_menu():
+            return jsonify({"success": True, "message": "删除菜单成功"})
+        else:
+            return jsonify({"success": False, "message": "删除菜单失败"})
+    except Exception as e:
+        logger.error(f"删除菜单异常: {str(e)}")
+        return jsonify({"success": False, "message": str(e)})
 
 @app.route('/wx', methods=['GET'])
 def wechat_verify():
@@ -88,22 +119,15 @@ def wechat_message():
             # 处理菜单点击事件
             if recMsg.MsgType == 'event' and recMsg.Event == 'CLICK':
                 logger.info(f"recMsg.EventKey is {recMsg.EventKey}")
-                if recMsg.EventKey == '2':
-                    # 处理观影券领取事件
-                    content = "关注公众号！"
+                if recMsg.EventKey == 'zhangtingfenxi':
+                    # 处理涨停分析事件
+                    content = "正在为您分析涨停数据..."
                     replyMsg = reply.TextMsg(toUser, fromUser, content)
                     return replyMsg.send()
                     
-                elif recMsg.EventKey == '4':
-                    # 处理图片消息事件
-                    replyMsg = reply.ImageMsg(toUser, fromUser, "dZ7hibV5wsIdYdwWOhRIi1u0Z4ZmJJ_fX1BLO8ewDHhOJs2FBj37YYTb0cti81GK")
-                    return replyMsg.send()
-                    
-                elif recMsg.EventKey == '8':
-                    # 处理抽奖事件
-                    content = "暂时没有抽奖~"
-                    replyMsg = reply.TextMsg(toUser, fromUser, content)
-                    return replyMsg.send()
+                else:
+                    logger.info(f"未处理的菜单事件: {recMsg.EventKey}")
+                    return "success"
             
             # 处理普通消息
             elif recMsg.MsgType == 'text':
