@@ -4,6 +4,7 @@ import reply
 import receive
 import logging
 import sys
+import xml.dom.minidom
 
 # 配置日志
 logging.basicConfig(
@@ -16,6 +17,14 @@ logging.basicConfig(
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
+
+def format_xml(xml_string):
+    """格式化 XML 字符串，使其更易读"""
+    try:
+        dom = xml.dom.minidom.parseString(xml_string)
+        return dom.toprettyxml(indent="  ")
+    except:
+        return xml_string
 
 @app.route('/')
 def home():
@@ -64,7 +73,9 @@ def wechat_message():
     try:
         # 获取微信服务器发送的数据
         webData = request.data
-        logger.info(f"Handle Post webdata is {webData}")
+        # 格式化 XML 数据并打印日志
+        formatted_xml = format_xml(webData.decode('utf-8'))
+        logger.info("Handle Post webdata is:\n%s", formatted_xml)
         
         # 解析XML数据
         recMsg = receive.parse_xml(webData)
