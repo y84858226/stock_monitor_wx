@@ -61,7 +61,28 @@ def wechat_message():
             toUser = recMsg.FromUserName
             fromUser = recMsg.ToUserName
             
-            if recMsg.MsgType == 'text':
+            # 处理菜单点击事件
+            if recMsg.MsgType == 'event' and recMsg.Event == 'CLICK':
+                print("recMsg.EventKey is ", recMsg.EventKey)
+                if recMsg.EventKey == '2':
+                    # 处理观影券领取事件
+                    content = "关注"汇邻商管"公众号，可至汇邻广场5号楼1F客服中心领取中影"9.9"元观影券一张（仅限中影汇邻店使用），每号限领一次，观影券数量有限，送完即止！"
+                    replyMsg = reply.TextMsg(toUser, fromUser, content)
+                    return replyMsg.send()
+                    
+                elif recMsg.EventKey == '4':
+                    # 处理图片消息事件
+                    replyMsg = reply.ImageMsg(toUser, fromUser, "dZ7hibV5wsIdYdwWOhRIi1u0Z4ZmJJ_fX1BLO8ewDHhOJs2FBj37YYTb0cti81GK")
+                    return replyMsg.send()
+                    
+                elif recMsg.EventKey == '8':
+                    # 处理抽奖事件
+                    content = "暂时没有抽奖~"
+                    replyMsg = reply.TextMsg(toUser, fromUser, content)
+                    return replyMsg.send()
+            
+            # 处理普通消息
+            elif recMsg.MsgType == 'text':
                 # 处理文本消息
                 content = "您发送了文本消息：" + recMsg.Content
                 replyMsg = reply.TextMsg(toUser, fromUser, content)

@@ -18,6 +18,8 @@ def parse_xml(web_data):
         return LocationMsg(xmlData)
     elif msg_type == 'link':
         return LinkMsg(xmlData)
+    elif msg_type == 'event':
+        return EventMsg(xmlData)
     else:
         return None
 
@@ -27,7 +29,7 @@ class Msg(object):
         self.FromUserName = xmlData.find('FromUserName').text
         self.CreateTime = xmlData.find('CreateTime').text
         self.MsgType = xmlData.find('MsgType').text
-        self.MsgId = xmlData.find('MsgId').text
+        self.MsgId = xmlData.find('MsgId').text if xmlData.find('MsgId') is not None else None
 
 class TextMsg(Msg):
     def __init__(self, xmlData):
@@ -68,4 +70,15 @@ class LinkMsg(Msg):
         Msg.__init__(self, xmlData)
         self.Title = xmlData.find('Title').text
         self.Description = xmlData.find('Description').text
-        self.Url = xmlData.find('Url').text 
+        self.Url = xmlData.find('Url').text
+
+class EventMsg(Msg):
+    def __init__(self, xmlData):
+        Msg.__init__(self, xmlData)
+        self.Event = xmlData.find('Event').text
+        # 如果是点击事件，获取EventKey
+        if self.Event == 'CLICK':
+            self.EventKey = xmlData.find('EventKey').text
+        # 如果是关注/取消关注事件
+        elif self.Event in ['subscribe', 'unsubscribe']:
+            self.EventKey = None 
